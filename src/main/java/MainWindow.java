@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 
 /**
  * Created by ivankorksiko on 03/06/15.
@@ -31,7 +32,9 @@ public class MainWindow {
     private JTextField femaleCountField;
     private JScrollPane scrollPane1;
     private JTable professionalTable;
-    private JFileChooser fileChooser;
+    private JButton saveButton;
+    private JFileChooser openFileChooser;
+    private JFileChooser saveFileChooser;
     private File computingFile;
     private Object[] tableData;
     private AbstractTableModel tableModel;
@@ -91,9 +94,9 @@ public class MainWindow {
         window.openButton.setText("Открыть");
         window.openButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int returnVal = window.fileChooser.showOpenDialog(frame);
+                int returnVal = window.openFileChooser.showOpenDialog(frame);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    window.computingFile = window.fileChooser.getSelectedFile();
+                    window.computingFile = window.openFileChooser.getSelectedFile();
                     window.inputFileNameField.setText(window.computingFile.getAbsolutePath());
                     System.out.println("Selected file:" + window.computingFile.getAbsolutePath());
                     window.setState(State.FILE_FOUND);
@@ -110,7 +113,6 @@ public class MainWindow {
         window.cleanButton.setText("Сбросить");
         window.cleanButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                window.textArea1.setText("");
                 window.inputFileNameField.setText("Файл не выбран");
                 window.setState(State.STARTED);
                 window.categorySelection.setSelectedIndex(0);
@@ -123,6 +125,7 @@ public class MainWindow {
                 window.maleCountField.setText("");
             }
         });
+
         window.computeButton.setText("Обработать");
         window.computeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -138,12 +141,27 @@ public class MainWindow {
             }
         });
 
+        window.saveButton.setText("Сохранить в файл");
+        window.saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = window.saveFileChooser.showSaveDialog(frame);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = window.saveFileChooser.getSelectedFile();
+                    try {
+                        window.interviewResult.saveToFile(file);
+                    } catch (FileNotFoundException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
 
 
-        window.fileChooser = new JFileChooser("/Users/ivankorksiko/Downloads/");
-        window.fileChooser.setAcceptAllFileFilterUsed(false);
-        window.fileChooser.setFileHidingEnabled(true);
-        window.fileChooser.setFileFilter(new FileFilter() {
+
+        window.openFileChooser = new JFileChooser("/Users/ivankorksiko/Downloads/");
+        window.openFileChooser.setAcceptAllFileFilterUsed(false);
+        window.openFileChooser.setFileHidingEnabled(true);
+        window.openFileChooser.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
                 if (f.isDirectory()) {
@@ -165,6 +183,34 @@ public class MainWindow {
             @Override
             public String getDescription() {
                 return "CSV files";
+            }
+        });
+
+        window.saveFileChooser = new JFileChooser("/Users/ivankorksiko/Documents/");
+        window.saveFileChooser.setAcceptAllFileFilterUsed(false);
+        window.saveFileChooser.setFileHidingEnabled(true);
+        window.saveFileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    return true;
+                }
+
+                String fileExtension = null;
+                String fileName = f.getName();
+                int index = fileName.lastIndexOf('.');
+                if (index > 0 && index < fileName.length() - 1) {
+                    fileExtension = fileName.substring(index + 1).toLowerCase();
+                }
+                if (fileExtension == null) {
+                    return false;
+                }
+                return fileExtension.equals("txt");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Тестовые (.txt) файлы";
             }
         });
 
@@ -307,6 +353,7 @@ public class MainWindow {
                 cleanButton.setEnabled(false);
                 computeButton.setEnabled(false);
                 categorySelection.setEnabled(false);
+                saveButton.setEnabled(false);
                 inputFileNameField.setText(STRING_FILE_NOT_FOUND);
                 break;
             case FILE_FOUND:
@@ -314,18 +361,21 @@ public class MainWindow {
                 cleanButton.setEnabled(false);
                 computeButton.setEnabled(true);
                 categorySelection.setEnabled(false);
+                saveButton.setEnabled(false);
                 break;
             case FILE_BEGIN_COMPUTING:
                 openButton.setEnabled(false);
                 cleanButton.setEnabled(false);
                 computeButton.setEnabled(false);
                 categorySelection.setEnabled(false);
+                saveButton.setEnabled(false);
                 break;
             case FILE_COMPUTED:
-                openButton.setEnabled(true);
+                openButton.setEnabled(false);
                 cleanButton.setEnabled(true);
                 computeButton.setEnabled(false);
                 categorySelection.setEnabled(true);
+                saveButton.setEnabled(true);
                 break;
             default:
                 break;
