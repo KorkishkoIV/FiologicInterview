@@ -17,10 +17,10 @@ import java.util.TreeMap;
 
 public class Main {
 
-    private static int femaleParticipants;
-    private static int maleParticipants;
-    private static Map<Integer,Integer> ageStat;
-    private static Map<String,Integer> professionStat;
+//    private static int femaleParticipants;
+//    private static int maleParticipants;
+//    private static Map<Integer,Integer> ageStat;
+//    private static Map<String,Integer> professionStat;
     public static final String[] categories = {"Азбука","Байкал","Вертолет","Гагарин","Дон","Елка","Жизнь","Зерно","Империя","Герой",
         "Калина","Лес","Москва","Народ","Орел","Победа","Россия","Спутник","Театр","Ушанка","Хлеб","Царь","Чайка","Шуба","Щи","Юность","Я"};
 
@@ -119,8 +119,11 @@ public class Main {
 
 
     public static void compute (File file, MainWindow mainWindow){
-        ageStat = new HashMap<Integer, Integer>();
-        professionStat = new HashMap<String, Integer>();
+        int maleParticipants = 0;
+        int femaleParticipants = 0;
+        Map<Integer, Integer> ageStat = new HashMap<Integer, Integer>();
+        Map<String, Integer>professionStat = new HashMap<String, Integer>();
+        AnswersAdapter answersAdapter = new AnswersAdapter();
         try {
             //csv file containing data
             String strFile = "/Users/ivankorksiko/Downloads/Ассоциативный эксперимент ответы (1) - Ответы на форму (1).csv";
@@ -162,7 +165,7 @@ public class Main {
                         }
                         String category = categories[((index + 1) / 5) - 1];
 
-                        Map<String, Integer> answerMap = AnswersAdapter.sharedAdapter().getAnswers(category);
+                        Map<String, Integer> answerMap = answersAdapter.getAnswers(category);
                         if (answerMap.containsKey(answer)) {
                             answerMap.put(answer, answerMap.get(answer) + 1);
                         } else {
@@ -177,40 +180,9 @@ public class Main {
                     ir.setProfessionalism(professionStat);
                     ir.setAnswers(new HashMap<String, Answer[]>());
                     for (String category:categories){
-                        ir.setAnswersForCategory(category,AnswersAdapter.sharedAdapter().getAnswers(category));
+                        ir.setAnswersForCategory(category,answersAdapter.getAnswers(category));
                     }
                     mainWindow.setInterviewResult(ir);
-
-//                   mainWindow.addLine("---------------------------ОТЧЕТ---------------------------");
-//                    mainWindow.addLine("------------------------Оценка пола------------------------");
-//                    mainWindow.addLine("Мужской________________________________" + maleParticipants);
-//                    mainWindow.addLine("Женский________________________________" + femaleParticipants);
-//                    mainWindow.addLine();
-//                    mainWindow.addLine("----------------------Оценка возраста----------------------");
-//                    for (Integer resultAge : ageStat.keySet()) {
-//                        mainWindow.addLine(resultAge + "__________________________" + ageStat.get(resultAge));
-//                    }
-//                    mainWindow.addLine();
-//                    mainWindow.addLine("------------------Оценка рода деятельности-----------------");
-//                    for (String resultProfesion : professionStat.keySet()) {
-//
-//                        mainWindow.addLine(resultProfesion + "__________________" + professionStat.get(resultProfesion));
-//                    }
-//                    mainWindow.addLine();
-//                    for (String category : categories) {
-//                        mainWindow.addLine("-----------------------------------------------------------------------------");
-//                        mainWindow.addLine(category.toUpperCase() + ":");
-//                        Map<String, Integer> answersMap = AnswersAdapter.sharedAdapter().getAnswers(category);
-//                        for (String answer : answersMap.keySet()) {
-//                            String answerCopy = answer;
-//                            while (answerCopy.length() < 100) {
-//                                answerCopy = answerCopy.concat(" ");
-//                            }
-//                            mainWindow.addLine(answerCopy + answersMap.get(answer));
-//                        }
-//                        mainWindow.addLine("-----------------------------------------------------------------------------");
-//                        mainWindow.addLine();
-//                    }
                 }
             }
         } catch (FileNotFoundException e) {
@@ -229,17 +201,8 @@ class AnswersAdapter
 {
     private Map<String,Map<String,Integer>> answers;
 
-    private AnswersAdapter(){
+    public AnswersAdapter(){
         this.answers = new TreeMap<String, Map<String, Integer>>();
-    }
-
-    private static AnswersAdapter sharedAdapter;
-
-    public static AnswersAdapter sharedAdapter(){
-        if (sharedAdapter == null){
-            sharedAdapter = new AnswersAdapter();
-        }
-        return sharedAdapter;
     }
 
     public Map getAnswers (String category){
